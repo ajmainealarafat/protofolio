@@ -1,0 +1,142 @@
+<!-- postlist.html -->
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>পোস্ট লিস্ট</title>
+  <!-- তোমার দেয়া CSS ফাইল (style.css) -->
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* তালিকা-সংশ্লিষ্ট অতিরিক্ত স্টাইল (তোমার CSS-এর সঙ্গে ম্যাচ করবে) */
+    header { padding: 30px 0 10px; text-align: center; }
+    .post-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 1.6rem; margin-top: 2rem; }
+    .post-card { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.25); transition: var(--transition); }
+    .post-card:hover { transform: translateY(-8px); }
+    .post-thumb { width:100%; height:180px; object-fit:cover; display:block; }
+    .post-body { padding: 18px; }
+    .post-title { font-size: 1.05rem; color: var(--color-primary); margin-bottom:8px; }
+    .post-excerpt { color: var(--color-light); font-size: 0.95rem; margin-bottom:12px; opacity:0.95; }
+    .post-meta { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .view-btn { background:var(--color-primary); color:var(--color-bg); padding: 8px 14px; border-radius:8px; text-decoration:none; font-weight:600; }
+    .admin-link { position:fixed; right:20px; bottom:20px; background:var(--color-secondary); color:#051426; padding:10px 14px; border-radius:50px; box-shadow:0 8px 30px rgba(0,0,0,0.35); text-decoration:none; font-weight:600; }
+    .empty { text-align:center; color:var(--color-light); padding:60px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📰 আমার ব্লগ</h1>
+    <p class="small-text-light">নিচে সর্বশেষ পোস্টগুলো দেখুন — ক্লিক করে বিস্তারিত দেখুন</p>
+  </header>
+
+  <main>
+    <section class="post-list" id="postsContainer">
+      <!-- পোস্টগুলো এখানে JS দিয়ে ইনসার্ট হবে -->
+    </section>
+
+    <div id="noPosts" class="empty" style="display:none;">
+      কোনো পোস্ট পাওয়া যায়নি — অ্যাডমিন প্যানেলে গিয়ে পোস্ট যোগ করুন।
+    </div>
+  </main>
+
+  <a class="admin-link" href="admin.html" title="Admin Panel">Admin 🛠</a>
+
+  <script>
+    // Utility: fetch posts.json (if hosted)
+    async function fetchPostsJson() {
+      try {
+        const res = await fetch('posts.json', {cache: "no-store"});
+        if (!res.ok) throw new Error('no server posts.json');
+        const data = await res.json();
+        return data;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    // Fallback: read from localStorage
+    function loadLocalPosts() {
+      try {
+        const raw = localStorage.getItem('posts');
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function renderPosts(posts) {
+      const container = document.getElementById('postsContainer');
+      container.innerHTML = '';
+      if (!posts || posts.length === 0) {
+        document.getElementById('noPosts').style.display = 'block';
+        return;
+      } else {
+        document.getElementById('noPosts').style.display = 'none';
+      }
+
+      posts.sort((a,b)=> b.id - a.id); // latest first
+      posts.forEach(post=>{
+        const card = document.createElement('article');
+        card.className = 'post-card';
+        const imgSrc = post.image || './assets/image/placeholder.jpg';
+        card.innerHTML = `
+          <img class="post-thumb" src="${imgSrc}" alt="${escapeHtml(post.title)}" />
+          <div class="post-body">
+            <div class="post-title">${escapeHtml(post.title)}</div>
+            <div class="post-excerpt">${escapeHtml(truncate(post.content,140))}</div>
+            <div class="post-meta">
+              <div class="small-text-light">${post.date || ''}</div>
+              <a class="view-btn" href="post.html?id=${encodeURIComponent(post.id)}">View</a>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function truncate(str, n) {
+      if(!str) return '';
+      return str.length > n ? str.slice(0,n) + '...' : str;
+    }
+
+    function escapeHtml(unsafe) {
+      if(!unsafe) return '';
+      return unsafe
+           .replaceAll('&','&amp;')
+           .replaceAll('<','&lt;')
+           .replaceAll('>','&gt;')
+           .replaceAll('"','&quot;')
+           .replaceAll("'",'&#039;');
+    }
+
+    (async function init(){
+      // Try server posts.json first
+      let posts = await fetchPostsJson();
+      if (!posts) {
+        posts = loadLocalPosts();
+      }
+      // If still empty, add a sample fallback
+      if (!posts || posts.length===0) {
+        posts = [
+          {
+            id: 1,
+            title: "বাংলাদেশের ইতিহাস",
+            image: "./assets/image/post1.jpg",
+            content: "বাংলাদেশ একটি সমৃদ্ধ সংস্কৃতির দেশ; ১৯৭১ সালে স্বাধীনতা অর্জন ...",
+            date: "2025-10-07"
+          },
+          {
+            id: 2,
+            title: "প্রযুক্তির উন্নতি",
+            image: "./assets/image/post2.jpg",
+            content: "বর্তমান যুগে প্রযুক্তি দ্রুতগতিতে উন্নতি করছে ...",
+            date: "2025-09-25"
+          }
+        ];
+      }
+      renderPosts(posts);
+    })();
+  </script>
+</body>
+</html>
