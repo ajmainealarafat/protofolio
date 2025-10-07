@@ -1,0 +1,94 @@
+<!-- post.html -->
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>পোস্ট — বিস্তারিত</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .container { max-width:900px; margin: 3.5rem auto; padding: 24px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .post-image { width:100%; height:420px; object-fit:cover; border-radius:12px; margin-bottom:18px; }
+    .post-title { font-size:1.8rem; color:var(--color-primary); margin-bottom:8px; }
+    .post-meta { color:var(--color-light); margin-bottom:16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .post-content { color:var(--color-light); line-height:1.8; font-weight:300; font-size:1.02rem; }
+    .back-btn { display:inline-block; margin-top:18px; background:var(--color-primary); color:var(--color-bg); padding:10px 16px; border-radius:10px; text-decoration:none; font-weight:600; }
+  </style>
+</head>
+<body>
+  <main class="container" id="postContainer">
+    <!-- JS will fill -->
+  </main>
+
+  <script>
+    // Helpers
+    function getQueryParam(key) {
+      const params = new URLSearchParams(location.search);
+      return params.get(key);
+    }
+
+    async function fetchPostsJson() {
+      try {
+        const res = await fetch('posts.json', {cache:'no-store'});
+        if(!res.ok) throw new Error('no posts.json');
+        return await res.json();
+      } catch(e) { return null; }
+    }
+
+    function loadLocalPosts() {
+      try {
+        const raw = localStorage.getItem('posts');
+        if(!raw) return null;
+        return JSON.parse(raw);
+      } catch(e) { return null; }
+    }
+
+    function escapeHtml(unsafe) {
+      if(!unsafe) return '';
+      return unsafe
+           .replaceAll('&','&amp;')
+           .replaceAll('<','&lt;')
+           .replaceAll('>','&gt;')
+           .replaceAll('"','&quot;')
+           .replaceAll("'",'&#039;');
+    }
+
+    (async function init(){
+      const id = getQueryParam('id');
+      const container = document.getElementById('postContainer');
+
+      let posts = await fetchPostsJson();
+      if (!posts) posts = loadLocalPosts();
+      if (!posts) posts = [];
+
+      let post;
+      if (id) {
+        post = posts.find(p => String(p.id) === String(id));
+      } else {
+        // if no id provided, show newest
+        post = posts[0];
+      }
+
+      if (!post) {
+        container.innerHTML = `
+          <h2 class="post-title">পোস্ট পাওয়া যায়নি</h2>
+          <p class="post-meta small-text-light">দয়া করে পোস্ট তালিকায় গিয়ে দেখুন বা অ্যাডমিন প্যানেল থেকে পোস্ট অ্যাড করুন</p>
+          <a class="back-btn" href="postlist.html">← ফিরে যান</a>
+        `;
+        return;
+      }
+
+      const html = `
+        <img class="post-image" src="${escapeHtml(post.image || './assets/image/placeholder.jpg')}" alt="${escapeHtml(post.title)}" />
+        <h1 class="post-title">${escapeHtml(post.title)}</h1>
+        <div class="post-meta small-text-light">
+          <div>প্রকাশিত: ${escapeHtml(post.date || '')}</div>
+        </div>
+        <div class="post-content">${post.content ? post.content : ''}</div>
+        <a class="back-btn" href="postlist.html">← ফিরে যান</a>
+      `;
+      container.innerHTML = html;
+    })();
+  </script>
+</body>
+</html>
