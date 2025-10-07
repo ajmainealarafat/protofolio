@@ -1,0 +1,464 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel — পোস্ট ম্যানেজার</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* মিনি ড্যাশবোর্ড স্টাইল */
+    body { padding: 30px 12px; }
+    .wrap { max-width:1100px; margin: 30px auto; }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:18px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.4); }
+    .top { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:18px; }
+    .brand { font-weight:700; color:var(--color-primary); font-size:1.15rem; }
+    .login-panel { display:flex; gap:8px; align-items:center; }
+    .btn { background:var(--color-primary); color:var(--color-bg); padding:10px 12px; border-radius:10px; text-decoration:none; cursor:pointer; font-weight:600; border:none; }
+    .btn.ghost { background:transparent; color:var(--color-white); border:1px solid rgba(255,255,255,0.06); }
+    .grid { display:grid; grid-template-columns: 1fr 360px; gap:16px; align-items:start; margin-top:14px; }
+    .form-row { display:flex; gap:8px; margin-bottom:10px; }
+    label { display:block; font-size:0.9rem; color:var(--color-light); margin-bottom:6px; }
+    input[type="text"], textarea { width:100%; background:transparent; border:1px dashed rgba(255,255,255,0.06); color:var(--color-white); padding:10px; border-radius:8px; outline:none; }
+    textarea { min-height:160px; resize:vertical; font-family:inherit; }
+    .list { max-height:520px; overflow:auto; margin-top:8px; }
+    .list-item { display:flex; gap:10px; align-items:center; padding:10px; border-radius:10px; margin-bottom:8px; background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)); }
+    .li-thumb { width:72px; height:54px; object-fit:cover; border-radius:8px; }
+    .li-title { font-weight:600; color:var(--color-primary); }
+    .li-actions { margin-left:auto; display:flex; gap:8px; }
+    .small { font-size:0.85rem; color:var(--color-light); }
+    .tools { display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
+    .notice { color:var(--color-light); margin-top:8px; font-size:0.9rem; }
+    .danger { background:#ff6b6b; color:#191919; }
+    .success { background:#6be29a; color:#051426; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="brand">Admin Panel — পোস্ট ম্যানেজার</div>
+        <div class="login-panel">
+          <input id="passwordInput" type="password" placeholder="পাসওয়ার্ড" style="padding:10px;border-radius:8px;background:transparent;border:1px dashed rgba(255,255,255,0.06);color:var(--color-white)"/>
+          <button id="loginBtn" class="btn">লগইন</button>
+          <button id="logoutBtn" class="btn ghost" style="display:none;">লগআউট</button>
+        </div>
+      </div>
+
+      <div id="dashboard" style="display:none;">
+        <div class="grid">
+          <!-- Left: Form -->
+          <div>
+            <div class="card" style="padding:16px;">
+              <h3 style="color:var(--color-primary); margin-bottom:8px">নতুন / এডিট পোস্ট</h3>
+
+              <div class="form-row">
+                <div style="flex:1">
+                  <label>টাইটেল</label>
+                  <input id="postTitle" type="text" placeholder="পোস্টের শিরোনাম" />
+                </div>
+                <div style="width:170px">
+                  <label>তারিখ</label>
+                  <input id="postDate" type="text" placeholder="YYYY-MM-DD" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div style="flex:1">
+                  <label>ছবির URL</label>
+                  <input id="postImage" type="text" placeholder="e.g. /assets/image/post3.jpg অথবা https://..." />
+                </div>
+              </div>
+
+              <label>কনটেন্ট (HTML বা simple text)</label>
+              <textarea id="postContent" placeholder="এখানে বিস্তারিত লেখো — HTML ট্যাগও ব্যবহার করতে পারো"></textarea>
+
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                <button id="saveBtn" class="btn">Save / Add</button>
+                <button id="clearBtn" class="btn ghost">Clear Form</button>
+                <button id="generateHtmlBtn" class="btn">Generate HTML (Download)</button>
+              </div>
+
+              <p class="notice">নোট: Generate HTML করলে ঐ পোস্টের আলাদা HTML ফাইল (যেমন post-3.html) ডাউনলোড হবে।</p>
+            </div>
+
+            <div style="margin-top:12px" class="card">
+              <h3 style="color:var(--color-primary); margin-bottom:8px">Posts</h3>
+              <div class="list" id="postsList"></div>
+
+              <div class="tools">
+                <button id="exportJsonBtn" class="btn success">Export posts.json</button>
+                <button id="importJsonBtn" class="btn ghost">Import posts.json</button>
+                <input id="fileInput" type="file" accept="application/json" style="display:none" />
+              </div>
+
+              <p class="notice">Export করে পাওয়া `posts.json` ফাইল সার্ভারে (Netlify) আপলোড করো — এরপর সাইটে নতুন পোস্ট লোড হবে।</p>
+            </div>
+          </div>
+
+          <!-- Right: Preview / Info -->
+          <aside>
+            <div class="card" style="padding:16px;">
+              <h3 style="color:var(--color-primary); margin-bottom:8px">Preview</h3>
+              <div id="preview" style="min-height:220px; border-radius:8px; padding:10px; background:linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02));"></div>
+              <p class="small" style="margin-top:10px">প্রিভিউ HTML হিসেবে দেখানো হবে — কপি করে পোস্ট HTML-এ ব্যবহার করতে পারো।</p>
+
+              <hr style="opacity:0.06; margin:12px 0" />
+
+              <h4 style="color:var(--color-primary); margin-bottom:8px">Quick Actions</h4>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <button id="downloadAllHtmlBtn" class="btn">Download all posts as HTML</button>
+                <button id="clearAllBtn" class="btn danger">Clear all posts (local only)</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /***********************
+   * Simple client-only admin
+   * - Auth: local password (not secure for public use)
+   * - Stores posts in localStorage under 'posts' key (array)
+   * - Provides export/import JSON + per-post HTML download
+   ***********************/
+
+  // === CONFIG ===
+  const ADMIN_PW = 'amaradmin123'; // তুমি চাইলে বদলাও — note: client-side, সহজেই দেখা যাবে
+  // =============
+
+  // Elements
+  const passwordInput = document.getElementById('passwordInput');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const dashboard = document.getElementById('dashboard');
+  const postTitle = document.getElementById('postTitle');
+  const postImage = document.getElementById('postImage');
+  const postContent = document.getElementById('postContent');
+  const postDate = document.getElementById('postDate');
+  const saveBtn = document.getElementById('saveBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const postsList = document.getElementById('postsList');
+  const preview = document.getElementById('preview');
+  const exportJsonBtn = document.getElementById('exportJsonBtn');
+  const importJsonBtn = document.getElementById('importJsonBtn');
+  const fileInput = document.getElementById('fileInput');
+  const generateHtmlBtn = document.getElementById('generateHtmlBtn');
+  const downloadAllHtmlBtn = document.getElementById('downloadAllHtmlBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+
+  // state
+  let posts = [];
+  let editingId = null;
+
+  // init
+  function loadState(){
+    try {
+      const raw = localStorage.getItem('posts');
+      posts = raw ? JSON.parse(raw) : [];
+    } catch(e) { posts = []; }
+  }
+
+  function saveState(){
+    localStorage.setItem('posts', JSON.stringify(posts));
+    renderList();
+  }
+
+  // auth
+  function setLoggedIn(logged){
+    if (logged) {
+      dashboard.style.display = 'block';
+      loginBtn.style.display = 'none';
+      logoutBtn.style.display = 'inline-block';
+      passwordInput.style.display = 'none';
+    } else {
+      dashboard.style.display = 'none';
+      loginBtn.style.display = 'inline-block';
+      logoutBtn.style.display = 'none';
+      passwordInput.style.display = 'inline-block';
+    }
+  }
+
+  loginBtn.addEventListener('click', ()=>{
+    const val = passwordInput.value.trim();
+    if (val === ADMIN_PW) {
+      localStorage.setItem('adminAuth','1');
+      setLoggedIn(true);
+      loadState();
+      renderList();
+    } else {
+      alert('পাসওয়ার্ড সঠিক নয়');
+    }
+  });
+
+  logoutBtn.addEventListener('click', ()=>{
+    localStorage.removeItem('adminAuth');
+    setLoggedIn(false);
+    passwordInput.value = '';
+  });
+
+  // On load: keep logged in if flag set
+  if (localStorage.getItem('adminAuth')) {
+    setLoggedIn(true);
+    loadState();
+    renderList();
+  } else {
+    setLoggedIn(false);
+  }
+
+  // render posts list in admin
+  function renderList(){
+    postsList.innerHTML = '';
+    if (!posts || posts.length===0) {
+      postsList.innerHTML = '<div class="small-text-light">কোনো পোস্ট নেই</div>';
+      preview.innerHTML = '';
+      return;
+    }
+    posts.slice().reverse().forEach(p=>{
+      const div = document.createElement('div');
+      div.className = 'list-item';
+      div.innerHTML = `
+        <img class="li-thumb" src="${escapeHtml(p.image||'./assets/image/placeholder.jpg')}" alt="${escapeHtml(p.title)}" />
+        <div>
+          <div class="li-title">${escapeHtml(p.title)}</div>
+          <div class="small">${escapeHtml(p.date||'')}</div>
+        </div>
+        <div class="li-actions">
+          <button class="btn ghost" data-edit="${p.id}">Edit</button>
+          <button class="btn" data-download="${p.id}">HTML</button>
+          <button class="btn danger" data-delete="${p.id}">Delete</button>
+        </div>
+      `;
+      postsList.appendChild(div);
+    });
+
+    // attach events
+    postsList.querySelectorAll('[data-edit]').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        const id = Number(btn.getAttribute('data-edit'));
+        startEditing(id);
+      });
+    });
+    postsList.querySelectorAll('[data-delete]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = Number(btn.getAttribute('data-delete'));
+        if (confirm('পোস্ট মুছতে চান? (localStorage থেকে)')) {
+          posts = posts.filter(p=>p.id !== id);
+          saveState();
+        }
+      });
+    });
+    postsList.querySelectorAll('[data-download]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = Number(btn.getAttribute('data-download'));
+        const p = posts.find(x=>x.id===id);
+        if (p) downloadPostHtml(p);
+      });
+    });
+  }
+
+  // helper escape
+  function escapeHtml(unsafe) {
+    if(!unsafe) return '';
+    return String(unsafe)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#039;');
+  }
+
+  // create new id
+  function nextId(){
+    return posts.length ? Math.max(...posts.map(p=>p.id)) + 1 : 1;
+  }
+
+  // save / add
+  saveBtn.addEventListener('click', ()=>{
+    const title = postTitle.value.trim();
+    const image = postImage.value.trim();
+    const content = postContent.value.trim();
+    const date = postDate.value.trim() || new Date().toISOString().slice(0,10);
+
+    if (!title) return alert('টাইটেল লেখো!');
+    if (editingId) {
+      // update
+      const idx = posts.findIndex(p=>p.id === editingId);
+      if (idx !== -1) {
+        posts[idx].title = title;
+        posts[idx].image = image;
+        posts[idx].content = content;
+        posts[idx].date = date;
+        editingId = null;
+      }
+    } else {
+      // add
+      const id = nextId();
+      posts.push({ id, title, image, content, date });
+    }
+    saveState();
+    clearForm();
+  });
+
+  clearBtn.addEventListener('click', clearForm);
+
+  function clearForm(){
+    editingId = null;
+    postTitle.value = '';
+    postImage.value = '';
+    postContent.value = '';
+    postDate.value = '';
+    preview.innerHTML = '';
+  }
+
+  function startEditing(id){
+    const p = posts.find(x=>x.id===id);
+    if (!p) return;
+    editingId = id;
+    postTitle.value = p.title;
+    postImage.value = p.image;
+    postContent.value = p.content;
+    postDate.value = p.date;
+    updatePreview();
+  }
+
+  // preview live
+  [postTitle, postImage, postContent, postDate].forEach(el=>{
+    el.addEventListener('input', updatePreview);
+  });
+
+  function updatePreview(){
+    const t = escapeHtml(postTitle.value);
+    const img = escapeHtml(postImage.value || './assets/image/placeholder.jpg');
+    const d = escapeHtml(postDate.value || new Date().toISOString().slice(0,10));
+    const c = postContent.value || '';
+    preview.innerHTML = `
+      <img src="${img}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px" />
+      <div style="color:var(--color-primary);font-weight:700;margin-bottom:6px">${t}</div>
+      <div class="small-text-light">${d}</div>
+      <div style="margin-top:8px;color:var(--color-light);font-size:0.95rem">${c}</div>
+    `;
+  }
+
+  // export JSON
+  exportJsonBtn.addEventListener('click', ()=>{
+    const data = JSON.stringify(posts, null, 2);
+    const blob = new Blob([data], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'posts.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // import JSON
+  importJsonBtn.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        if (!Array.isArray(parsed)) throw new Error('invalid');
+        posts = parsed;
+        saveState();
+        alert('posts.json import successful (saved to localStorage). এখন Export করে সার্ভারে আপলোড করো।');
+      } catch(err) {
+        alert('invalid JSON file');
+      }
+    };
+    reader.readAsText(f);
+    fileInput.value = '';
+  });
+
+  // generate single post HTML download
+  function downloadPostHtml(post) {
+    const id = post.id;
+    const filename = `post-${id}.html`;
+    const html = buildPostHtml(post);
+    const blob = new Blob([html], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // generate all posts as separate HTML and trigger downloads (one by one)
+  downloadAllHtmlBtn.addEventListener('click', ()=>{
+    if (!posts || posts.length===0) return alert('কোনো পোস্ট নেই');
+    posts.forEach((p, idx) => {
+      setTimeout(()=> downloadPostHtml(p), idx * 300);
+    });
+  });
+
+  // build post HTML (simple standalone page using global style.css)
+  function buildPostHtml(post) {
+    const safeTitle = escapeHtml(post.title || '');
+    const safeImage = escapeHtml(post.image || './assets/image/placeholder.jpg');
+    const safeDate = escapeHtml(post.date || '');
+    const content = post.content || '';
+    return `<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${safeTitle}</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .container { max-width:900px; margin:3.5rem auto; padding:24px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,0.4); }
+    .post-image { width:100%; height:420px; object-fit:cover; border-radius:12px; margin-bottom:18px; }
+    .post-title { font-size:1.8rem; color:var(--color-primary); margin-bottom:8px; }
+    .post-meta { color:var(--color-light); margin-bottom:16px; }
+    .post-content { color:var(--color-light); line-height:1.8; font-weight:300; font-size:1.02rem; }
+    .back-btn { display:inline-block; margin-top:18px; background:var(--color-primary); color:var(--color-bg); padding:10px 16px; border-radius:10px; text-decoration:none; font-weight:600; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <img class="post-image" src="${safeImage}" alt="${safeTitle}" />
+    <h1 class="post-title">${safeTitle}</h1>
+    <div class="post-meta">প্রকাশিত: ${safeDate}</div>
+    <div class="post-content">
+      ${content}
+    </div>
+    <a class="back-btn" href="postlist.html">← ফিরে যান</a>
+  </main>
+</body>
+</html>`;
+  }
+
+  // clear all
+  clearAllBtn.addEventListener('click', ()=>{
+    if (!confirm('সব পোস্ট মুছে ফেলতে চান (localStorage থেকে)?')) return;
+    posts = [];
+    saveState();
+  });
+
+  // download HTML for current content in form
+  generateHtmlBtn.addEventListener('click', ()=>{
+    const tmpPost = {
+      id: editingId || nextId(),
+      title: postTitle.value.trim() || 'Untitled',
+      image: postImage.value.trim() || './assets/image/placeholder.jpg',
+      content: postContent.value || '',
+      date: postDate.value.trim() || new Date().toISOString().slice(0,10)
+    };
+    downloadPostHtml(tmpPost);
+  });
+
+  // initial load
+  loadState();
+  renderList();
+</script>
+</body>
+  </html>
