@@ -1,119 +1,193 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
-
-/* Section CSS  */
-@import url(./assets/css/hero.css);
-@import url(./assets/css/nav.css);
-@import url(./assets/css/about.css);
-@import url(./assets/css/experience.css);
-@import url(./assets/css/services.css);
-@import url(./assets/css/portfolio.css);
-@import url(./assets/css/testimonials.css);
-@import url(./assets/css/contact.css);
-@import url(./assets/css/footer.css);
-
-/* Responsive CSS  */
-@import url(./assets/css/responsive/mobile.css);
-@import url(./assets/css/responsive/tablet.css);
+/* --- Ultra Premium Apple UI Style --- */
 
 :root {
-  --color-bg: #0d2a47;
-  --color-bg-varient: #1d466f;
-  --color-primary: #4ad295;
-  --color-secondary: #b1b3f8;
-  --color-primary-varient: rgba(77, 181, 255, 0.4);
-  --color-white: #fff;
-  --color-light: rgba(255, 255, 255, 0.6);
-  --transition: all 400ms ease;
+    --text-main: #1d1d1f;
+    --text-muted: #86868b;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --hover-bg: rgba(255, 255, 255, 0.85);
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.04);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
 body {
-  background-color: var(--color-bg);
-  font-family: "Poppins", sans-serif;
-  color: var(--color-white);
-  background-image: url(./assets/image/shape-triangle.png);
+    background-color: #f5f5f7;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5 {
-  font-weight: 500;
-  margin: 0;
+/* Abstract Background Shapes for Premium Vibe */
+.bg-shape {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: -1;
+    opacity: 0.6;
 }
 
-h1 {
-  text-align: center;
-  font-size: 2.5rem;
+.shape-1 {
+    width: 400px;
+    height: 400px;
+    background: #e0c3fc;
+    top: -100px;
+    left: -100px;
 }
 
-section {
-  margin-top: 8rem;
+.shape-2 {
+    width: 500px;
+    height: 500px;
+    background: #8ec5fc;
+    bottom: -150px;
+    right: -150px;
 }
 
-h2,
-h5 {
-  text-align: center;
-  color: var(--color-light);
+/* Main Container */
+.container {
+    width: 100%;
+    max-width: 540px;
+    padding: 4rem 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
 }
 
-.small-text-light {
-  color: var(--color-light);
+/* Profile Section */
+.profile-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-section > h2 {
-  color: var(--color-primary);
-  margin-bottom: 3rem;
-  font-size: 1.5rem;
-  /* margin-top: -10px; */
+.avatar-container {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 1.2rem;
 }
 
-section > h5 {
-  font-size: 0.9rem;
+.avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-section h3 {
-  color: var(--color-primary);
-  margin-bottom: 2rem;
-  font-size: 1.2rem;
+.name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.3rem;
 }
 
-section p {
-  font-size: 1rem;
-  font-weight: 300;
-  color: var(--color-light);
+.bio {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 400;
 }
 
-.text-light {
-  color: var(--color-light);
+/* Links Section */
+.links-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-a {
-  color: var(--color-primary);
-  transition: var(--transition);
-  text-decoration: none;
-  font-weight: 400;
+/* Premium Glassmorphism Buttons */
+.premium-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px; /* Modern Apple Curve */
+    text-decoration: none;
+    color: var(--text-main);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-soft);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-a:hover {
-  color: var(--color-white);
-  transition: var(--transition);
-}
-/* ===== GLOBAL RESET ===== */
-html, body {
-  overflow-x: hidden; /* হরিজন্টাল স্ক্রল পুরো বন্ধ */
-  width: 100%;
-  max-width: 100vw;
-  margin: 0 auto;
-  box-sizing: border-box;
-  font-family: system-ui, sans-serif;
+.premium-btn:hover {
+    background: var(--hover-bg);
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: var(--shadow-hover);
 }
 
-body > * {
-  max-width: 1200px; /* আপনার থিমের মাক্সিমাম প্রস্থ */
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 15px;  /* পার্শ্ব স্পেসিং */
-  padding-right: 15px; /* পার্শ্ব স্পেসিং */
-  box-sizing: border-box;
+.premium-btn:active {
+    transform: scale(0.98);
+}
+
+/* Button Layout Structure */
+.icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.ig-icon { color: #E1306C; }
+.web-icon { color: #1d1d1f; }
+
+.btn-text {
+    flex: 1; /* This pushes the arrow to the right and centers the text beautifully */
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.2px;
+}
+
+.arrow-icon {
+    font-size: 1.2rem;
+    color: #c7c7cc;
+    transition: color 0.3s ease;
+}
+
+.premium-btn:hover .arrow-icon {
+    color: #1d1d1f;
+}
+
+/* Footer */
+.footer {
+    margin-top: 4rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Smooth Entrance Animation */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
